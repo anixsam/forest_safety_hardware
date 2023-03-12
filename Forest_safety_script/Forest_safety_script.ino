@@ -67,7 +67,3 @@ void webSocketEvent(WStype_t eventType, uint8_t * payload, size_t length) {
       break;
   }
 }
-
-void sendData() {
-  webSocketClient.sendTXT("Hello, server!");
-}
