@@ -42,18 +42,23 @@ void setup() {
 void loop() {
   const int motionSensorValue = digitalRead(pirPin);
   const int flameSensorValue = digitalRead(flamePin);
+  Serial.println("Motion Sensor : " + String(motionSensorValue) + " Flame Sensor : " + String(flameSensorValue));
+    
   if(flameSensorValue == 0)
   {
-    flameFlag = true;
-    StaticJsonDocument<200> jsonMessage;
-    jsonMessage.clear();
-    jsonMessage["from"] = "device";
-    String message;
-    jsonMessage["sensor"] = "fire";
-    jsonMessage["value"] = true;
-    serializeJson(jsonMessage,message);
-    webSocketClient.sendTXT(message);    
-    Serial.println("Fire Detected");
+    if(!flameFlag)
+    {
+      flameFlag = true;
+      StaticJsonDocument<200> jsonMessage;
+      jsonMessage.clear();
+      jsonMessage["from"] = "device";
+      String message;
+      jsonMessage["sensor"] = "fire";
+      jsonMessage["value"] = true;
+      serializeJson(jsonMessage,message);
+      webSocketClient.sendTXT(message);    
+      Serial.println("Fire Detected");
+    }
   }
   else
   {
@@ -68,20 +73,24 @@ void loop() {
       jsonMessage["value"] = false;
       serializeJson(jsonMessage,message);
       webSocketClient.sendTXT(message); 
+      Serial.println("Fire Not Detected");
     } 
   }
   if(motionSensorValue == 1)
   {
-    motionFlag = true;
-    StaticJsonDocument<200> jsonMessage;
-    jsonMessage.clear();
-    jsonMessage["from"] = "device";
-    String message;
-    jsonMessage["sensor"] = "motion";
-    jsonMessage["value"] = true;
-    serializeJson(jsonMessage,message);
-    webSocketClient.sendTXT(message); 
-    Serial.println("Motion Detected");
+    if(!motionFlag)
+    {
+      motionFlag = true;
+      StaticJsonDocument<200> jsonMessage;
+      jsonMessage.clear();
+      jsonMessage["from"] = "device";
+      String message;
+      jsonMessage["sensor"] = "motion";
+      jsonMessage["value"] = true;
+      serializeJson(jsonMessage,message);
+      webSocketClient.sendTXT(message); 
+      Serial.println("Motion Detected");
+    }
   }
   else 
   {
@@ -96,6 +105,7 @@ void loop() {
       jsonMessage["value"] = false;
       serializeJson(jsonMessage,message);
       webSocketClient.sendTXT(message);
+      Serial.println("Motion Not Detected");
     }
   }
   webSocketClient.loop();
@@ -142,7 +152,6 @@ void webSocketEvent(WStype_t eventType, uint8_t * payload, size_t length) {
           handleNormalMessage(doc);
         }
       }
-      
       break;
   }
 }
@@ -153,27 +162,16 @@ void handleNormalMessage(StaticJsonDocument<1024> msg)
   digitalWrite(buzzerPin,LOW);
   digitalWrite(fencePin,LOW);
   digitalWrite(ledPin,LOW);
-
 }
 
 void handleMotionMessage(StaticJsonDocument<1024> msg)
 {
   digitalWrite(ledPin,HIGH);
   digitalWrite(fencePin,HIGH);
-
-  sendSMS("Animal Crossing Detected");
 }
 
 void handleFireMessage(StaticJsonDocument<1024> msg)
 {
   digitalWrite(buzzerPin,HIGH);
   digitalWrite(ledPin,HIGH);
-
-  sendSMS("Forest Fire Detected");
-}
-
-
-void sendSMS(String message)
-{
-  String msg = message;
 }
