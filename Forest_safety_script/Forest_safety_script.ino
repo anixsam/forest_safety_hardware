@@ -4,7 +4,7 @@
 
 const char* ssid = "Iot test network";    // Replace with your WiFi network name
 const char* password = "test@123";   // Replace with your WiFi network password
-const char* webSocketServer = "192.168.1.3";   // Replace with your WebSocket server address
+const char* webSocketServer = "192.168.1.6";   // Replace with your WebSocket server address
 
 int webSocketPort = 8080;   // Replace with your WebSocket server port
 
@@ -60,6 +60,21 @@ void loop() {
       Serial.println("Fire Detected");
     }
   }
+  {
+    if(!flameFlag)
+    {
+      flameFlag = true;
+      StaticJsonDocument<200> jsonMessage;
+      jsonMessage.clear();
+      jsonMessage["from"] = "device";
+      String message;
+      jsonMessage["sensor"] = "fire";
+      jsonMessage["value"] = true;
+      serializeJson(jsonMessage,message);
+      webSocketClient.sendTXT(message);    
+      Serial.println("Fire Detected");
+    }
+  }
   else
   {
     if(flameFlag)
@@ -74,9 +89,25 @@ void loop() {
       serializeJson(jsonMessage,message);
       webSocketClient.sendTXT(message); 
       Serial.println("Fire Not Detected");
+      Serial.println("Fire Not Detected");
     } 
   }
   if(motionSensorValue == 1)
+  {
+    if(!motionFlag)
+    {
+      motionFlag = true;
+      StaticJsonDocument<200> jsonMessage;
+      jsonMessage.clear();
+      jsonMessage["from"] = "device";
+      String message;
+      jsonMessage["sensor"] = "motion";
+      jsonMessage["value"] = true;
+      serializeJson(jsonMessage,message);
+      webSocketClient.sendTXT(message); 
+      Serial.println("Motion Detected");
+    }
+  }
   {
     if(!motionFlag)
     {
@@ -134,12 +165,12 @@ void webSocketEvent(WStype_t eventType, uint8_t * payload, size_t length) {
         return;
       }
 
-      if (doc.containsKey("id"))
+      if (doc.containsKey("type"))
       {
-        String type = doc["id"];
+        String type = doc["type"];
         Serial.print("Type : ");
           Serial.println(type);
-        if(type == "motion")
+        if(type == "wildlife")
         {
           handleMotionMessage(doc);
         }
@@ -147,9 +178,13 @@ void webSocketEvent(WStype_t eventType, uint8_t * payload, size_t length) {
         {
           handleFireMessage(doc);
         }
-        else if(type == "normal")
+        else if(type == "no-wildlife")
         {
-          handleNormalMessage(doc);
+          handleNoWildlifeMessage(doc);
+        }
+        else if(type == "no-fire")
+        {
+          handleNoFireMessage(doc);
         }
       }
       break;
@@ -157,9 +192,8 @@ void webSocketEvent(WStype_t eventType, uint8_t * payload, size_t length) {
 }
 
 
-void handleNormalMessage(StaticJsonDocument<1024> msg)
+void handleNoWildlifeMessage(StaticJsonDocument<1024> msg)
 {
-  digitalWrite(buzzerPin,LOW);
   digitalWrite(fencePin,LOW);
   digitalWrite(ledPin,LOW);
 }
@@ -174,4 +208,10 @@ void handleFireMessage(StaticJsonDocument<1024> msg)
 {
   digitalWrite(buzzerPin,HIGH);
   digitalWrite(ledPin,HIGH);
+}
+
+void handleNoFireMessage(StaticJsonDocument<1024> msg)
+{
+  digitalWrite(buzzerPin,LOW);
+  digitalWrite(ledPin,LOW);
 }
