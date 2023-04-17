@@ -60,21 +60,6 @@ void loop() {
       Serial.println("Fire Detected");
     }
   }
-  {
-    if(!flameFlag)
-    {
-      flameFlag = true;
-      StaticJsonDocument<200> jsonMessage;
-      jsonMessage.clear();
-      jsonMessage["from"] = "device";
-      String message;
-      jsonMessage["sensor"] = "fire";
-      jsonMessage["value"] = true;
-      serializeJson(jsonMessage,message);
-      webSocketClient.sendTXT(message);    
-      Serial.println("Fire Detected");
-    }
-  }
   else
   {
     if(flameFlag)
@@ -93,21 +78,6 @@ void loop() {
     } 
   }
   if(motionSensorValue == 1)
-  {
-    if(!motionFlag)
-    {
-      motionFlag = true;
-      StaticJsonDocument<200> jsonMessage;
-      jsonMessage.clear();
-      jsonMessage["from"] = "device";
-      String message;
-      jsonMessage["sensor"] = "motion";
-      jsonMessage["value"] = true;
-      serializeJson(jsonMessage,message);
-      webSocketClient.sendTXT(message); 
-      Serial.println("Motion Detected");
-    }
-  }
   {
     if(!motionFlag)
     {
